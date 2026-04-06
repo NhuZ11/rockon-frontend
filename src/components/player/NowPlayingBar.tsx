@@ -1,8 +1,8 @@
 import { usePlayer } from "../../contexts/PlayerContext";
 import { PlayerControls } from "./PlayerControls";
-import { formatDuration } from "../../utils/formatDuration";
 import { getSongThumbnailUrl } from "../../utils/getSongThumbnailUrl";
 import { buildStreamUrl } from "../../api/songs";
+import { ProgressBar } from "./ProgressBar";
 
 export function NowPlayingBar() {
   const { currentSong, registerAudioElement, isExpanded, setExpanded } =
@@ -51,29 +51,18 @@ export function NowPlayingBar() {
                 {currentSong.artist ?? "Unknown artist"}
               </p>
             </div>
-            <div className="player-overlay-audio">
-              <audio
-                ref={registerAudioElement}
-                className="player-overlay-audio-element"
-                src={streamUrl}
-                controls
-              />
-            </div>
+
+            <ProgressBar expanded />
+
             <div className="player-overlay-controls">
               <div className="player-overlay-controls-row">
                 <PlayerControls />
               </div>
               <div className="player-overlay-extra">
-                <button
-                  type="button"
-                  className="player-overlay-extra-button"
-                >
+                <button type="button" className="player-overlay-extra-button">
                   Shuffle
                 </button>
-                <button
-                  type="button"
-                  className="player-overlay-extra-button"
-                >
+                <button type="button" className="player-overlay-extra-button">
                   Repeat
                 </button>
               </div>
@@ -99,6 +88,7 @@ export function NowPlayingBar() {
       )}
 
       <div className="bottom-player">
+        <ProgressBar />
         <button
           type="button"
           className="now-playing-main"
@@ -108,11 +98,7 @@ export function NowPlayingBar() {
             <div className="now-playing-header">
               {thumbnailUrl ? (
                 <div className="now-playing-thumbnail">
-                  <img
-                    src={thumbnailUrl}
-                    alt=""
-                    loading="lazy"
-                  />
+                  <img src={thumbnailUrl} alt="" loading="lazy" />
                 </div>
               ) : (
                 <div className="now-playing-thumbnail now-playing-thumbnail--fallback">
@@ -130,8 +116,7 @@ export function NowPlayingBar() {
                       {currentSong.title}
                     </div>
                     <div className="truncate text-[0.75rem] text-slate-400">
-                      {currentSong.artist ?? "Unknown artist"} •{" "}
-                      {formatDuration(currentSong.duration_sec)}
+                      {currentSong.artist ?? "Unknown artist"}
                     </div>
                   </>
                 ) : (
@@ -145,7 +130,13 @@ export function NowPlayingBar() {
         </button>
         <PlayerControls />
       </div>
+
+      {/* Persistent hidden audio element */}
+      <audio
+        ref={registerAudioElement}
+        src={streamUrl}
+        style={{ display: "none" }}
+      />
     </>
   );
 }
-

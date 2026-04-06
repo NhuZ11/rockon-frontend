@@ -795,8 +795,84 @@ a {
   cursor: pointer;
 }
 
-.song-detail-back:hover {
-  background: #020617;
+/* Progress Bar */
+
+.mini-progress-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mini-progress-fill {
+  height: 100%;
+  background: var(--rockon-accent);
+  box-shadow: 0 0 8px var(--rockon-accent);
+  transition: width 0.1s linear;
+}
+
+.progress-bar-container {
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.progress-time-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-slider-wrapper {
+  position: relative;
+  height: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.progress-slider {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  z-index: 2;
+  margin: 0;
+}
+
+.progress-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.progress-slider:hover::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.progress-slider-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, var(--rockon-accent), #4ade80);
+  border-radius: 999px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.progress-slider:hover + .progress-slider-fill {
+  background: #4ade80;
 }
 
 .song-detail-hero {

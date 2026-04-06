@@ -18,6 +18,8 @@ type PlayerState = {
   isPlaying: boolean;
   volume: number;
   isExpanded: boolean;
+  currentTime: number;
+  duration: number;
 };
 
 type PlayerContextValue = PlayerState & {
@@ -28,6 +30,7 @@ type PlayerContextValue = PlayerState & {
   setVolume: (value: number) => void;
   registerAudioElement: (el: HTMLAudioElement | null) => void;
   setExpanded: (value: boolean) => void;
+  seek: (time: number) => void;
 };
 
 const PlayerContext = createContext<PlayerContextValue | undefined>(undefined);
@@ -46,6 +49,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     const stored = loadFromStorage<StoredState | null>(STORAGE_KEY, null);
@@ -75,17 +80,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         el.volume = volume;
       }
     },
-    [volume]
+    [volume],
   );
 
-  const playSong = useCallback(
-    (song: Song, newQueue?: Song[]) => {
-      setCurrentSong(song);
-      if (newQueue) setQueue(newQueue);
-      setIsPlaying(true);
-    },
-    []
-  );
+  const playSong = useCallback((song: Song, newQueue?: Song[]) => {
+    setCurrentSong(song);
+    if (newQueue) setQueue(newQueue);
+    setIsPlaying(true);
+  }, []);
 
   const playNext = useCallback(() => {
     if (!currentSong || queue.length <= 1) return;
@@ -126,11 +128,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
-    audio.src = buildStreamUrl(currentSong.id);
+
+    // Only update source if it actually changes to prevent restarting the song
+    const nextSrc = buildStreamUrl(currentSong.id);
+    if (audio.src !== nextSrc) {
+      audio.src = nextSrc;
+    }
+
     if (isPlaying) {
       audio.play().catch(() => {});
     }
-  }, [currentSong, isPlaying]);
+  }, [currentSong]); // Only run when currentSong changes
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -140,16 +148,38 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     } else {
       audio.pause();
     }
-  }, [isPlaying]);
+  }, [isPlaying]); // Only run when isPlaying toggles
+
+  const seek = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = time;
+    setCurrentTime(time);
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+
     const handleEnded = () => {
       playNext();
     };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
+
     return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
     };
   }, [playNext]);
@@ -161,6 +191,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       isPlaying,
       volume,
       isExpanded,
+      currentTime,
+      duration,
       playSong,
       playNext,
       playPrevious,
@@ -168,6 +200,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setVolume,
       registerAudioElement,
       setExpanded: setIsExpanded,
+      seek,
     }),
     [
       currentSong,
@@ -175,6 +208,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       isPlaying,
       volume,
       isExpanded,
+      currentTime,
+      duration,
       playSong,
       playNext,
       playPrevious,
@@ -182,10 +217,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setVolume,
       registerAudioElement,
       setIsExpanded,
-    ]
+      seek,
+    ],
   );
 
-  return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
+  return (
+    <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>
+  );
 }
 
 export function usePlayer() {
@@ -195,4 +233,3 @@ export function usePlayer() {
   }
   return ctx;
 }
-
