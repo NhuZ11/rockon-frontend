@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { ApiResponse, Playlist, PlaylistItem } from "../types";
+import type { Playlist, PlaylistItem } from "../types";
 
 type PlaylistWithItems = {
   playlist: Playlist;

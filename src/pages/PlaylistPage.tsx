@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePlaylists } from "../hooks/usePlaylists";
 import { Loader } from "../components/common/Loader";
-import { Button } from "../components/common/Button";
+
 
 export function PlaylistPage() {
   const { data, loading, error } = usePlaylists();
@@ -22,9 +22,9 @@ export function PlaylistPage() {
             Organize your library into focused queues.
           </p>
         </div>
-        <Button as="a" href="#create" variant="ghost">
+        <Link to="#create" className="ghost">
           + New
-        </Button>
+        </Link>
       </section>
 
       {loading && <Loader />}
