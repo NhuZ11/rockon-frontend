@@ -1,9 +1,9 @@
 import type { ApiResponse } from "../types";
 
-const DEFAULT_BASE_URL = "http://localhost:3000";
+const DEFAULT_BASE_URL = import.meta.env.VITE_APP_BASE_URL;
 
 const API_BASE_URL =
-  import.meta.env.VITE_ROCKON_API_BASE_URL ?? DEFAULT_BASE_URL;
+  import.meta.env.VITE_API_URL ?? DEFAULT_BASE_URL;
 
 const API_KEY = import.meta.env.VITE_ROCKON_API_KEY;
 
